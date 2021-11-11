@@ -15,3 +15,11 @@ No becaues E2E testing is "a way for developers to automate test cases that invo
 This means that it will presumably replicate a typical user's actions from the start of the program to the end of the program. If
 we wanted to test for a bug in a specific function call, we wouldn't want to run the entire program. We would want to test  
 this function specfically so a much better option would be to use unit testing. 
+
+3) No, because since we are dealing with a "Messaging Application" the "Message Feature" is basically the 
+the entire application which would involve a lot of other functions like selecting the recipent the user 
+wants to send the message to, uploading different files, sending multiple messages at the same time, etc. So something
+like E2E testing would be better. 
+
+4) Yes we would use unit testing to test the max length feature of the messaging application because the only thing this feature does it to stop the user from typing over a certain number of characters which is a very specific task in the grand scheme of the entire application. When testing specifc individual modules for their functionality, unit test would be a much better choice than E2E testing.
+
