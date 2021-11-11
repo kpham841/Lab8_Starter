@@ -27,7 +27,7 @@ describe('Basic user flow for Website', () => {
     const prodItems = await page.$$('product-item')
 
     // Loop through all product items
-    for (let i = 0; i <= prodItems.length; i++) {
+    for (let i = 0; i < prodItems.length; i++) {
       console.log(`Checking product item ${i}/${prodItems.length}`)
       // Grab the .data property of <product-items> to grab all of the json data stored inside
       data = await prodItems[i].getProperty('data')
@@ -43,9 +43,9 @@ describe('Basic user flow for Website', () => {
       if (plainValue.image.length == 0) {
         allArePopulated = false
       }
-      // Expect allArePopulated to still be true
-      expect(allArePopulated).toBe(true)
     }
+    // Expect allArePopulated to still be true
+    expect(allArePopulated).toBe(true)
 
     // TODO - Step 1
     // Right now this function is only checking the first <product-item> it found, make it so that
@@ -63,25 +63,26 @@ describe('Basic user flow for Website', () => {
     // Once you have the innerText property, use innerText['_remoteObject'].value to get the text value of it
 
     // Query all <product-item> elements
-    const prodItems = await page.$$('product-item')
+    const prodItems = await page.$$('product-item'); 
 
     // grab shadowRoot of first element
-    const shadowRoot = await prodItems[0].getProperty('shadowRoot')
+    const shadowRoot = await prodItems[0].getProperty('shadowRoot'); 
 
     // query button from that shadowroot
-    const button = await shadowRoot.$$('button')
+    const button = await shadowRoot.$('button'); 
 
     // click button and check innerText property of button
-    await button.click()
-    const innerText = await button.$$('innerText')
+    await button.click(); 
+    const innerText = await button.getProperty('innerText'); 
 
     // get text value
-    const textValue = innerText['_remoteObject'].value
+    const textValue = innerText['_remoteObject'].value;
   }, 2500)
 
   // Check to make sure that after clicking "Add to Cart" on every <product-item> that the Cart
   // number in the top right has been correctly updated
   it('Checking number of items in cart on screen', async () => {
+    let rightCount = true; 
     console.log('Checking number of items in cart on screen...')
     // TODO - Step 3
     // Query select all of the <product-item> elements, then for every single product element
@@ -92,19 +93,28 @@ describe('Basic user flow for Website', () => {
     const prodItems = await page.$$('product-item')
 
     // Loop through all items
-    for (let i = 0; i < prodItems.length; i++) {
+    for (let i = 1; i < prodItems.length; i++) {
       // Get shadowRoot for each item
       let shadowRoot = await prodItems[i].getProperty('shadowRoot')
 
       // query button from that shadowroot
-      const button = await shadowRoot.$$('button')
-
+      const button = await shadowRoot.$('button')
+      // console.log(button);
       // click button and check innerText property of button
       await button.click()
-    }
+      let match = (i + 1).toString(); 
+      let cart = await page.$('#cart-count'); 
+      let innerText = await cart.getProperty('innerText'); 
+      innerText = innerText['_remoteObject'].value; 
 
-    // Check innerText of #cart-count is 20
+      if (innerText !== match) {
+        rightCount = false; 
+        break; 
+      }
+    }
+    expect(rightCount).toBe(true); 
   }, 10000)
+    // Check innerText of #cart-count is 20
 
   // Check to make sure that after you reload the page it remembers all of the items in your cart
   it('Checking number of items in cart on screen after reload', async () => {
@@ -113,10 +123,55 @@ describe('Basic user flow for Website', () => {
     // Reload the page, then select all of the <product-item> elements, and check every
     // element to make sure that all of their buttons say "Remove from Cart".
     // Also check to make sure that #cart-count is still 20
+    // Reload the page
+    await page.reload()
+    // Query all <product-item> elements
+    const prodItems = await page.$$('product-item')
+    // Boolean with initial value true
+    let correct = true
+    // Check every element so their buttons say "Remove from Cart"
+    for (let i = 0; i < prodItems.length; i++) {
+      // Get shadowRoot for each item
+      let shadowRoot = await prodItems[i].getProperty('shadowRoot')
+      // query button from that shadowroot
+      let button = await shadowRoot.$('button')
+      // get innertext of button
+      let innerText = await button.getProperty('innerText')
+      // get text value
+      let textValue = innerText['_remoteObject'].value
+      // Check if textValue is Remove from Cart
+      if (textValue !== 'Remove from Cart') {
+        correct = false; 
+      } 
+    }
+    // Query cart
+    const cart = await page.$('#cart-count')
+    // get innertext of cart
+    const innerText = await cart.getProperty('innerText')
+    // get text value
+    const textValue = innerText['_remoteObject'].value
+    // if textvalue 20, switched = true
+    if (textValue !== '20') {
+      correct = false; 
+    }
+    expect(correct).toBe(true)
   }, 10000)
 
   // Check to make sure that the cart in localStorage is what you expect
   it('Checking the localStorage to make sure cart is correct', async () => {
+    console.log('Checking the localStorage to make sure cart is correct')
+    const localStorageData = await page.evaluate(() => {
+      let json = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        json[key] = localStorage.getItem(key);
+      }
+      return json;
+    });
+    expect(localStorageData['cart']).toBe('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]'); 
+    // console.log(localStorageData);
+    // expect(localStorageData['cart']).toBe('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]')
+    // console.log(localStorageData);
     // TODO - Step 5
     // At this point he item 'cart' in localStorage should be
     // '[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]', check to make sure it is
